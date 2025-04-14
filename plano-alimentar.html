@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rastreador Alimentar v2</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts (Opcional) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* --- Estilos das Abas --- */
+        .tab-button {
+            @apply px-4 py-2 font-medium text-sm rounded-md cursor-pointer transition-colors duration-200 ease-in-out border border-transparent; /* Added border for layout consistency */
+        }
+        .tab-button.active {
+            @apply bg-emerald-600 text-white shadow-md border-emerald-700; /* Style for active tab */
+        }
+        .tab-button:not(.active) {
+            @apply text-gray-600 hover:bg-emerald-100 hover:text-emerald-800 border-gray-200; /* Style for inactive tabs */
+        }
+        /* --- Visibilidade do Conteúdo das Abas --- */
+        .tab-content {
+            @apply hidden; /* Conteúdo escondido por padrão */
+        }
+        .tab-content.active {
+            @apply block; /* Mostra o conteúdo da aba ativa */
+        }
+        /* --- Outros Estilos --- */
+        .remove-btn { cursor: pointer; margin-left: 8px; font-weight: bold; color: #ef4444; } /* red-500 */
+        .remove-btn:hover { color: #dc2626; } /* red-600 */
+         ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .macro-input { @apply w-full sm:w-20 p-2 border border-gray-300 rounded-md placeholder-gray-400 text-sm; }
+        .description-input { @apply flex-grow p-2 border border-gray-300 rounded-md placeholder-gray-400 text-sm; }
+        .add-food-btn { @apply bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-3 rounded-md transition duration-200 text-sm; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-emerald-50 to-cyan-100 text-gray-800 p-4 md:p-8 min-h-screen">
+
+    <div class="max-w-7xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden">
+        <header class="bg-gradient-to-r from-emerald-600 to-cyan-600 p-6 text-white">
+            <h1 class="text-3xl md:text-4xl font-bold text-center">Meu Rastreador Alimentar Detalhado</h1>
+        </header>
+
+        <!-- Navegação por Abas -->
+        <nav class="p-4 border-b border-gray-200 bg-gray-50">
+            <div class="flex flex-wrap justify-center gap-2 md:gap-4">
+                <a href="registro.html" class="nav-link">📝 Registro Diário</a>
+                <a href="plano.html" class="nav-link">🎯 Plano Alimentar</a>
+                <a href="resumo.html" class="nav-link">📊 Resumo do Dia</a>
+                <a href="medidas.html" class="nav-link">📏 Medidas</a>
+                <a href="resumo_semanal.html" class="nav-link">📅 Resumo Semanal</a> <!-- NOVO LINK -->
+            </div>
+        </nav>
+
+        <div class="p-6 md:p-8">
+
+            <!-- Conteúdo das Abas -->
+
+            <!-- ABA 1: REGISTRO DIÁRIO -->
+            <div id="tab-content-registro" class="tab-content">
+                <!-- Seletor de Data -->
+                <div class="mb-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <label for="date-picker" class="text-lg font-semibold text-gray-700">Selecione a Data:</label>
+                    <input type="date" id="date-picker" class="p-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
+                </div>
+
+                <!-- Seção Genérica de Refeição (Template) -->
+                <template id="meal-section-template">
+                    <section class="meal-section p-4 border border-gray-200 rounded-lg shadow-sm bg-white mb-6">
+                        <h3 class="meal-title text-xl font-semibold text-cyan-700 mb-3"></h3>
+                        <div class="flex flex-col lg:flex-row gap-2 mb-3 items-end">
+                            <div class="flex-grow w-full lg:w-auto">
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Alimento/Descrição</label>
+                                <input type="text" class="food-description description-input w-full" placeholder="Ex: Peito de Frango Grelhado">
+                            </div>
+                             <div class="flex gap-2 w-full lg:w-auto flex-wrap sm:flex-nowrap">
+                                <div><label class="block text-xs font-medium text-gray-500 mb-1">Cal (kcal)</label><input type="number" min="0" class="food-calories macro-input" placeholder="150"></div>
+                                <div><label class="block text-xs font-medium text-gray-500 mb-1">Prot (g)</label><input type="number" min="0" step="0.1" class="food-protein macro-input" placeholder="30"></div>
+                                <div><label class="block text-xs font-medium text-gray-500 mb-1">Carb (g)</label><input type="number" min="0" step="0.1" class="food-carbs macro-input" placeholder="5"></div>
+                                <div><label class="block text-xs font-medium text-gray-500 mb-1">Gord (g)</label><input type="number" min="0" step="0.1" class="food-fat macro-input" placeholder="2"></div>
+                            </div>
+                            <button class="add-food-btn w-full lg:w-auto mt-2 lg:mt-0">Adicionar</button>
+                        </div>
+                        <p class="text-xs text-gray-500 italic mb-3">Nota: Insira Calorias e Macros. Se não souber Macros, insira ao menos Calorias.</p>
+                        <ul class="food-list list-none space-y-2 text-gray-700 max-h-60 overflow-y-auto pr-2"></ul>
+                    </section>
+                </template>
+
+                <!-- Container para as Seções de Refeição -->
+                <div id="meal-sections-container" class="space-y-6"></div>
+            </div>
+
+            <!-- ABA 2: PLANO ALIMENTAR -->
+            <div id="tab-content-plano" class="tab-content">
+                 <h2 class="text-2xl font-bold text-emerald-700 mb-6 border-b-2 border-emerald-200 pb-2">Plano Alimentar Sugerido (Referência)</h2>
+                <p class="mb-6 text-gray-600 italic">Este é um exemplo baseado na sua rotina inicial. Use-o como guia e ajuste conforme necessário ou com orientação profissional.</p>
+                <div class="space-y-6">
+                    <section class="p-4 border border-gray-200 rounded-lg shadow-sm bg-emerald-50"><h3 class="text-xl font-semibold text-cyan-700 mb-3">~7:30 - Café da Manhã</h3><ul class="list-disc list-inside ml-4 space-y-1 text-gray-700 text-sm"><li><strong class="font-medium">Opção 1:</strong> 2-3 Ovos mexidos/cozidos + 2 fatias pão integral OU 3 col. sopa aveia + 1 porção fruta.</li><li><strong class="font-medium">Opção 2:</strong> Omelete (2-3 ovos) c/ vegetais + 1 tapioca média c/ frango desfiado ou queijo cottage.</li><li><strong class="font-medium">Opção 3:</strong> Shake Whey + água/leite desnatado + 1 fruta + 1 col. sopa aveia/chia.</li></ul><p class="mt-3 text-xs text-red-600"><strong class="font-semibold">Moderar:</strong> Calabresa, queijos amarelos.</p></section>
+                    <section class="p-4 border border-gray-200 rounded-lg shadow-sm bg-emerald-50"><h3 class="text-xl font-semibold text-cyan-700 mb-3">~12:00 - Almoço</h3><ul class="list-disc list-inside ml-4 space-y-1 text-gray-700 text-sm"><li><strong class="font-medium">Metade do Prato:</strong> Salada variada + Legumes cozidos (brócolis, couve-flor). Tempere c/ azeite, limão/vinagre.</li><li><strong class="font-medium">1/4 do Prato:</strong> Proteína Magra Grelhada/Assada (Frango, Peixe, Boi magro).</li><li><strong class="font-medium">1/4 do Prato:</strong> Carboidrato (Arroz integral OU 3-4 col. sopa arroz branco + 2-3 col. sopa feijão caldo).</li></ul><p class="mt-3 text-xs text-red-600"><strong class="font-semibold">Moderar:</strong> Frituras, carnes gordas, tropeiro, molhos cremosos.</p></section>
+                    <section class="p-4 border border-gray-200 rounded-lg shadow-sm bg-emerald-50"><h3 class="text-xl font-semibold text-cyan-700 mb-3">~16:00 - Lanche da Tarde</h3><ul class="list-disc list-inside ml-4 space-y-1 text-gray-700 text-sm"><li><strong class="font-medium">Opção 1:</strong> Iogurte Natural Desnatado + Fruta ou Granola s/ açúcar.</li><li><strong class="font-medium">Opção 2:</strong> Fruta (maçã, pera) + Punhado de Castanhas (20-30g).</li><li><strong class="font-medium">Opção 3:</strong> 2 fatias pão integral + Pasta de amendoim ou Queijo cottage.</li><li><strong class="font-medium">Opção 4:</strong> 2 Ovos cozidos.</li></ul></section>
+                    <section class="p-4 border border-gray-200 rounded-lg shadow-sm bg-emerald-50"><h3 class="text-xl font-semibold text-cyan-700 mb-3">~20:00 - Jantar (Pré-Treino)</h3><ul class="list-disc list-inside ml-4 space-y-1 text-gray-700 text-sm"><li>Similar ao almoço, priorizar grelhados/cozidos + vegetais. Ajustar carbo para energia.</li><li><strong class="font-medium">Opções Rápidas Casa:</strong> Omelete c/ legumes; Salada c/ frango/atum; Sopa de legumes c/ frango; Wrap integral leve.</li></ul><p class="mt-3 text-xs text-gray-600">Comer ~1h a 1h30 antes do treino.</p></section>
+                    <section class="p-4 border border-gray-200 rounded-lg shadow-sm bg-emerald-50"><h3 class="text-xl font-semibold text-cyan-700 mb-3">~22:15 - Pós-Treino (Opcional)</h3><ul class="list-disc list-inside ml-4 space-y-1 text-gray-700 text-sm"><li><strong class="font-medium">Opção 1:</strong> Shake Whey Protein c/ água.</li><li><strong class="font-medium">Opção 2:</strong> Iogurte natural desnatado.</li><li><strong class="font-medium">Opção 3:</strong> 2 Ovos cozidos (se jantar foi leve e ainda há fome).</li></ul></section>
+                </div>
+                 <div class="mt-8 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded-md"><p>Lembre-se da hidratação (2.5-3.5L água/dia), sono adequado e moderação nos fins de semana.</p></div>
+            </div>
+
+            <!-- ABA 3: RESUMO DO DIA -->
+            <div id="tab-content-resumo" class="tab-content">
+                 <h2 class="text-2xl font-bold text-emerald-700 mb-6 border-b-2 border-emerald-200 pb-2">Resumo Nutricional do Dia Selecionado</h2>
+                 <p class="mb-6 text-gray-600 italic">Dados referentes à data selecionada na aba "Registro Diário".</p>
+                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 text-center">
+                    <div class="p-4 bg-emerald-100 rounded-lg shadow"><h4 class="text-sm font-medium text-emerald-700 uppercase tracking-wider">Calorias Totais</h4><p class="text-3xl font-bold text-emerald-800 mt-1"><span id="summary-total-calories">0</span> kcal</p></div>
+                    <div class="p-4 bg-sky-100 rounded-lg shadow"><h4 class="text-sm font-medium text-sky-700 uppercase tracking-wider">Proteínas Totais</h4><p class="text-3xl font-bold text-sky-800 mt-1"><span id="summary-total-protein">0</span> g</p></div>
+                    <div class="p-4 bg-amber-100 rounded-lg shadow"><h4 class="text-sm font-medium text-amber-700 uppercase tracking-wider">Carboidratos Totais</h4><p class="text-3xl font-bold text-amber-800 mt-1"><span id="summary-total-carbs">0</span> g</p></div>
+                    <div class="p-4 bg-rose-100 rounded-lg shadow"><h4 class="text-sm font-medium text-rose-700 uppercase tracking-wider">Gorduras Totais</h4><p class="text-3xl font-bold text-rose-800 mt-1"><span id="summary-total-fat">0</span> g</p></div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="p-4 border border-gray-200 rounded-lg shadow-sm bg-white"><h3 class="text-lg font-semibold text-cyan-700 mb-4 text-center">Distribuição de Calorias por Refeição</h3><div class="h-64 md:h-80 relative"><canvas id="meal-calorie-chart"></canvas></div></div>
+                    <div class="p-4 border border-gray-200 rounded-lg shadow-sm bg-white"><h3 class="text-lg font-semibold text-emerald-700 mb-4 text-center">Distribuição de Macronutrientes (em g)</h3><div class="h-64 md:h-80 relative"><canvas id="macro-distribution-chart"></canvas></div></div>
+                </div>
+            </div>
+
+        </div> <!-- Fim do Padding Principal -->
+
+        <footer class="text-center p-4 bg-gray-100 text-gray-500 text-sm border-t border-gray-200">
+            Dados salvos localmente no seu navegador via LocalStorage.
+        </footer>
+    </div> <!-- Fim do Container Principal -->
+
+    <script>
+        // --- ELEMENTOS DO DOM ---
+        const datePicker = document.getElementById('date-picker');
+        const mealSectionsContainer = document.getElementById('meal-sections-container');
+        const mealSectionTemplate = document.getElementById('meal-section-template');
+        const tabNavigation = document.getElementById('tab-navigation'); // Container dos botões
+        const tabContents = document.querySelectorAll('.tab-content'); // Todos os divs de conteúdo
+
+        // Elementos do Resumo
+        const summaryTotalCaloriesEl = document.getElementById('summary-total-calories');
+        const summaryTotalProteinEl = document.getElementById('summary-total-protein');
+        const summaryTotalCarbsEl = document.getElementById('summary-total-carbs');
+        const summaryTotalFatEl = document.getElementById('summary-total-fat');
+        const mealCalorieChartCtx = document.getElementById('meal-calorie-chart')?.getContext('2d');
+        const macroDistChartCtx = document.getElementById('macro-distribution-chart')?.getContext('2d');
+
+
+        // --- CONFIGURAÇÕES ---
+        const MEAL_TYPES = { breakfast: 'Café da Manhã', lunch: 'Almoço', dinner: 'Jantar', snacks: 'Lanches' };
+        const LOCAL_STORAGE_KEY = 'advancedMealTrackerData-v2'; // Use uma chave diferente se a estrutura mudou
+
+        // --- VARIÁVEIS GLOBAIS ---
+        let mealCalorieChartInstance = null;
+        let macroDistChartInstance = null;
+        let dailyData = {}; // Estrutura: {'YYYY-MM-DD': { mealKey: [{ description, calories, protein, carbs, fat }] }}
+
+        // --- FUNÇÕES DE MANIPULAÇÃO DE DADOS (LOCAL STORAGE) ---
+        const loadDataFromLocalStorage = () => {
+            const dataString = localStorage.getItem(LOCAL_STORAGE_KEY);
+            try {
+                return dataString ? JSON.parse(dataString) : {};
+            } catch (e) { console.error("Erro ao carregar dados:", e); return {}; }
+        };
+        const saveDataToLocalStorage = () => {
+            try {
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dailyData));
+            } catch (e) { console.error("Erro ao salvar dados:", e); alert("Erro ao salvar dados."); }
+        };
+
+        // --- FUNÇÕES DE MANIPULAÇÃO DAS ABAS ---
+        const activateTab = (tabId) => {
+            // Atualiza estilo dos botões
+            tabNavigation.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.toggle('active', button.dataset.tab === tabId);
+            });
+            // Mostra/Esconde conteúdo das abas
+            tabContents.forEach(content => {
+                content.classList.toggle('active', content.id === `tab-content-${tabId}`);
+            });
+            // Se a aba de resumo foi ativada, atualiza seus dados
+            if (tabId === 'resumo') {
+                updateSummaryData(getCurrentDateString());
+            }
+        };
+
+        // --- FUNÇÕES DE RENDERIZAÇÃO (Registro Diário) ---
+        const getCurrentDateString = () => {
+            // Corrige potencial problema de fuso horário com input date
+            const date = new Date(datePicker.value);
+            const offset = date.getTimezoneOffset() * 60000; // Offset em milissegundos
+            const correctedDate = new Date(date.getTime() + offset);
+            return correctedDate.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+        };
+
+        const renderMealSections = () => {
+            mealSectionsContainer.innerHTML = ''; // Limpa container
+            Object.keys(MEAL_TYPES).forEach(mealKey => {
+                const clone = mealSectionTemplate.content.cloneNode(true);
+                const section = clone.querySelector('.meal-section');
+                section.dataset.mealKey = mealKey; // Identifica a seção (breakfast, lunch, etc.)
+
+                clone.querySelector('.meal-title').textContent = MEAL_TYPES[mealKey];
+                clone.querySelector('.add-food-btn').addEventListener('click', handleAddFood);
+
+                mealSectionsContainer.appendChild(clone);
+            });
+        };
+
+        const renderFoodList = (date) => {
+            const dayData = dailyData[date] || {};
+            Object.keys(MEAL_TYPES).forEach(mealKey => {
+                const section = mealSectionsContainer.querySelector(`.meal-section[data-meal-key="${mealKey}"]`);
+                if (!section) return; // Segurança
+
+                const listElement = section.querySelector('.food-list');
+                listElement.innerHTML = ''; // Limpa lista específica da refeição
+                const mealItems = dayData[mealKey] || [];
+
+                mealItems.forEach((item, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'flex justify-between items-start text-sm py-1.5 border-b border-gray-100 flex-wrap';
+                    // Sanitiza a descrição para evitar problemas de HTML injection (básico)
+                    const safeDescription = item.description.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    li.innerHTML = `
+                        <span class="flex-grow mr-2 mb-1 sm:mb-0">${safeDescription}</span>
+                        <span class="text-xs text-gray-600 whitespace-nowrap">
+                           (${Number(item.calories || 0).toFixed(0)}kcal | P:${Number(item.protein || 0).toFixed(1)}g C:${Number(item.carbs || 0).toFixed(1)}g G:${Number(item.fat || 0).toFixed(1)}g)
+                        </span>
+                        <span class="remove-btn ml-auto sm:ml-2" data-meal-key="${mealKey}" data-index="${index}" title="Remover item">&times;</span>
+                    `;
+                    listElement.appendChild(li);
+                });
+            });
+            // É importante atualizar o resumo sempre que a lista é renderizada (adição/remoção)
+            updateSummaryData(date);
+        };
+
+        // --- FUNÇÕES DE ATUALIZAÇÃO (Resumo e Gráficos) ---
+        const updateSummaryData = (date) => {
+            const dayData = dailyData[date] || {};
+            let totalCalories = 0, totalProtein = 0, totalCarbs = 0, totalFat = 0;
+            const caloriesPerMeal = {};
+
+            Object.keys(MEAL_TYPES).forEach(mealKey => {
+                let mealCalories = 0;
+                (dayData[mealKey] || []).forEach(item => {
+                    const itemCalories = Number(item.calories) || 0;
+                    const itemProtein = Number(item.protein) || 0;
+                    const itemCarbs = Number(item.carbs) || 0;
+                    const itemFat = Number(item.fat) || 0;
+
+                    totalCalories += itemCalories;
+                    totalProtein += itemProtein;
+                    totalCarbs += itemCarbs;
+                    totalFat += itemFat;
+                    mealCalories += itemCalories;
+                });
+                caloriesPerMeal[mealKey] = mealCalories;
+            });
+
+            // Atualiza os totais na tela
+            summaryTotalCaloriesEl.textContent = totalCalories.toFixed(0);
+            summaryTotalProteinEl.textContent = totalProtein.toFixed(1);
+            summaryTotalCarbsEl.textContent = totalCarbs.toFixed(1);
+            summaryTotalFatEl.textContent = totalFat.toFixed(1);
+
+            // Atualiza os gráficos
+            updateMealCalorieChart(caloriesPerMeal);
+            updateMacroDistributionChart(totalProtein, totalCarbs, totalFat);
+        };
+
+        const updateMealCalorieChart = (caloriesPerMeal) => {
+            if (!mealCalorieChartCtx) return;
+            const labels = Object.keys(MEAL_TYPES).map(key => MEAL_TYPES[key]);
+            const dataValues = Object.keys(MEAL_TYPES).map(key => caloriesPerMeal[key] || 0);
+            const chartData = {
+                labels: labels,
+                datasets: [{
+                    label: 'Calorias por Refeição (kcal)', data: dataValues,
+                    backgroundColor: ['rgba(52, 211, 153, 0.7)', 'rgba(34, 211, 238, 0.7)', 'rgba(251, 146, 60, 0.7)', 'rgba(168, 85, 247, 0.7)'],
+                    borderColor: ['rgb(16, 185, 129)', 'rgb(6, 182, 212)', 'rgb(249, 115, 22)', 'rgb(147, 51, 234)'],
+                    borderWidth: 1, hoverOffset: 4
+                }]
+            };
+            const options = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels:{ padding: 10, boxWidth: 12, font: { size: 11}} } }, cutout: '50%'};
+
+            if (mealCalorieChartInstance) { mealCalorieChartInstance.data = chartData; mealCalorieChartInstance.update(); }
+            else { mealCalorieChartInstance = new Chart(mealCalorieChartCtx, { type: 'doughnut', data: chartData, options: options }); }
+        };
+
+        const updateMacroDistributionChart = (protein, carbs, fat) => {
+            if (!macroDistChartCtx) return;
+            const totalGrams = protein + carbs + fat;
+            const dataValues = totalGrams > 0 ? [protein, carbs, fat] : [0, 0, 0]; // Evita gráfico vazio
+            const chartData = {
+                labels: [`Proteína (${protein.toFixed(1)}g)`, `Carboidrato (${carbs.toFixed(1)}g)`, `Gordura (${fat.toFixed(1)}g)`],
+                datasets: [{
+                    label: 'Distribuição de Macros (g)', data: dataValues,
+                    backgroundColor: ['rgba(34, 197, 94, 0.7)', 'rgba(234, 179, 8, 0.7)', 'rgba(239, 68, 68, 0.7)'],
+                    borderColor: ['rgb(22, 163, 74)', 'rgb(202, 138, 4)', 'rgb(220, 38, 38)'],
+                    borderWidth: 1, hoverOffset: 4
+                }]
+            };
+             const options = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels:{ padding: 10, boxWidth: 12, font: { size: 11}} } }};
+
+            if (macroDistChartInstance) { macroDistChartInstance.data = chartData; macroDistChartInstance.update(); }
+            else { macroDistChartInstance = new Chart(macroDistChartCtx, { type: 'pie', data: chartData, options: options }); }
+        };
+
+        // --- FUNÇÕES DE MANIPULAÇÃO DE EVENTOS ---
+        const handleDateChange = () => {
+            const selectedDate = getCurrentDateString();
+            renderFoodList(selectedDate); // Atualiza lista no Registro
+            // O updateSummaryData já é chamado dentro de renderFoodList,
+            // mas chamar aqui garante atualização mesmo se a lista estiver vazia.
+            updateSummaryData(selectedDate);
+        };
+
+        const handleAddFood = (event) => {
+            const button = event.target;
+            const section = button.closest('.meal-section');
+            if (!section) return; // Segurança
+
+            const mealKey = section.dataset.mealKey;
+            const date = getCurrentDateString();
+
+            const descriptionInput = section.querySelector('.food-description');
+            const caloriesInput = section.querySelector('.food-calories');
+            const proteinInput = section.querySelector('.food-protein');
+            const carbsInput = section.querySelector('.food-carbs');
+            const fatInput = section.querySelector('.food-fat');
+
+            const description = descriptionInput.value.trim();
+            const calories = parseInt(caloriesInput.value) || 0;
+            const protein = parseFloat(proteinInput.value) || 0;
+            const carbs = parseFloat(carbsInput.value) || 0;
+            const fat = parseFloat(fatInput.value) || 0;
+
+            if (!description) { alert("Insira a descrição."); descriptionInput.focus(); return; }
+            if (calories <= 0 && protein <= 0 && carbs <= 0 && fat <= 0) {
+                alert("Insira pelo menos um valor (Calorias ou Macro)."); caloriesInput.focus(); return;
+            }
+
+            // Garante a estrutura do objeto dailyData
+            if (!dailyData[date]) dailyData[date] = {};
+            if (!dailyData[date][mealKey]) dailyData[date][mealKey] = [];
+
+            dailyData[date][mealKey].push({ description, calories, protein, carbs, fat });
+
+            saveDataToLocalStorage(); // Salva no localStorage
+            renderFoodList(date); // Atualiza a lista na UI
+
+            // Limpa os campos
+            descriptionInput.value = '';
+            caloriesInput.value = '';
+            proteinInput.value = '';
+            carbsInput.value = '';
+            fatInput.value = '';
+            descriptionInput.focus();
+        };
+
+       const handleRemoveFood = (event) => {
+           // Usa event delegation para eficiência
+           if (!event.target.classList.contains('remove-btn')) return;
+
+           const button = event.target;
+           const mealKey = button.dataset.mealKey;
+           const index = parseInt(button.dataset.index, 10);
+           const date = getCurrentDateString();
+
+           if (dailyData[date]?.[mealKey]?.[index] !== undefined) {
+               dailyData[date][mealKey].splice(index, 1); // Remove o item
+               saveDataToLocalStorage(); // Salva a alteração
+               renderFoodList(date); // Re-renderiza a lista para a data atual
+           }
+       };
+
+       // --- INICIALIZAÇÃO ---
+        const initializeApp = () => {
+            // Define data atual no picker
+            const today = new Date();
+            const offset = today.getTimezoneOffset() * 60000;
+            const localISOTime = new Date(today.getTime() - offset).toISOString().split('T')[0];
+            datePicker.value = localISOTime;
+
+            // Carrega dados salvos
+            dailyData = loadDataFromLocalStorage();
+
+            // Renderiza estrutura inicial
+            renderMealSections();
+            renderFoodList(localISOTime); // Renderiza dados para hoje
+            updateSummaryData(localISOTime); // Garante resumo inicial
+
+            // Configura Abas
+            tabNavigation.addEventListener('click', (event) => {
+                if (event.target.classList.contains('tab-button')) {
+                    activateTab(event.target.dataset.tab);
+                }
+            });
+            activateTab('registro'); // Define a aba inicial ativa
+
+            // Configura Listeners Globais
+            datePicker.addEventListener('change', handleDateChange);
+            // Listener para remoção usando event delegation no container das refeições
+            mealSectionsContainer.addEventListener('click', handleRemoveFood);
+        };
+
+        // --- Executa a inicialização ---
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+    </script>
+
+</body>
+</html>

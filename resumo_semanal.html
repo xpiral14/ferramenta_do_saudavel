@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rastreador - Resumo Semanal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .nav-link { @apply px-4 py-2 font-medium text-sm rounded-md cursor-pointer transition-colors duration-200 ease-in-out border border-transparent; }
+        .nav-link.active { @apply bg-emerald-600 text-white shadow-md border-emerald-700 cursor-default; } /* Página atual */
+        .nav-link:not(.active) { @apply text-gray-600 bg-gray-100 hover:bg-emerald-100 hover:text-emerald-800 border-gray-200; }
+         ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; } ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        /* Estilos para a tabela de comparação */
+        .comparison-table th, .comparison-table td { @apply px-3 py-2 border border-gray-200 text-center text-sm text-left; }
+        .comparison-table th { @apply bg-gray-100 font-semibold text-gray-600; }
+        .comparison-table td:first-child { @apply text-left font-medium text-gray-700; }
+        .percentage-change span { @apply ml-1 text-xs; }
+        .percentage-change .increase { @apply text-red-600; }
+        .percentage-change .decrease { @apply text-green-600; }
+        th,td {
+            text-align: left;
+            padding: 8px 16px;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-emerald-50 to-cyan-100 text-gray-800 p-4 md:p-8 min-h-screen">
+
+    <div class="max-w-7xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden">
+        <header class="bg-gradient-to-r from-emerald-600 to-cyan-600 p-6 text-white">
+             <h1 class="text-3xl md:text-4xl font-bold text-center">Meu Rastreador Alimentar Detalhado</h1>
+        </header>
+
+        <!-- Navegação (Resumo Semanal está ativo) -->
+        <nav class="p-4 border-b border-gray-200 bg-gray-50">
+            <div class="flex flex-wrap justify-center gap-2 md:gap-4">
+                <a href="registro.html" class="nav-link">📝 Registro Diário</a>
+                <a href="plano.html" class="nav-link">🎯 Plano Alimentar</a>
+                <a href="resumo.html" class="nav-link">📊 Resumo do Dia</a>
+                <a href="medidas.html" class="nav-link">📏 Medidas</a>
+                <a href="resumo_semanal.html" class="nav-link active">📅 Resumo Semanal</a> <!-- Link ativo -->
+                <a href="index.html" class="nav-link">🏠 Início</a>
+            </div>
+        </nav>
+
+        <main class="p-6 md:p-8">
+             <h2 class="text-2xl font-bold text-emerald-700 mb-6 border-b-2 border-emerald-200 pb-2">Comparativo Semanal</h2>
+
+             <!-- Seletores de Semana -->
+             <section class="mb-8 p-6 border border-gray-200 rounded-lg shadow-sm bg-gray-50">
+                 <h3 class="text-lg font-semibold text-gray-700 mb-4 text-center">Selecione as Semanas para Comparar</h3>
+                 <div class="flex flex-col sm:flex-row justify-center items-end gap-4 md:gap-6">
+                     <div class="w-full sm:w-auto">
+                         <label for="week-selector-current" class="block text-sm font-medium text-gray-600 mb-1">Semana Atual:</label>
+                         <input type="week" id="week-selector-current" class="p-2 border border-gray-300 rounded-md shadow-sm w-full">
+                     </div>
+                      <span class="text-gray-500 font-semibold hidden sm:block mb-2">vs.</span>
+                     <div class="w-full sm:w-auto">
+                         <label for="week-selector-comparison" class="block text-sm font-medium text-gray-600 mb-1">Semana Anterior (Comparação):</label>
+                         <input type="week" id="week-selector-comparison" class="p-2 border border-gray-300 rounded-md shadow-sm w-full">
+                     </div>
+                     <button id="compare-weeks-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-md transition duration-200 text-sm w-full sm:w-auto">
+                         Comparar Semanas
+                     </button>
+                 </div>
+             </section>
+
+             <!-- Área de Resultados da Comparação -->
+             <section id="comparison-results" class="hidden">
+                 <h3 class="text-xl font-semibold text-cyan-700 mb-4 text-center">Resultados da Comparação</h3>
+
+                 <!-- Resumo Nutricional -->
+                 <div class="mb-8">
+                     <h4 class="text-lg font-medium text-gray-800 mb-3">Resumo Nutricional (Médias Diárias)</h4>
+                     <div class="overflow-x-auto bg-white rounded-lg shadow border border-gray-200">
+                         <table class="min-w-full comparison-table">
+                             <thead>
+                                 <tr>
+                                     <th>Métrica</th>
+                                     <th>Semana Atual</th>
+                                     <th>Semana Comparada</th>
+                                     <th>Variação %</th>
+                                 </tr>
+                             </thead>
+                             <tbody>
+                                 <tr><td>Calorias (kcal)</td><td id="nutri-cal-current">-</td><td id="nutri-cal-comp">-</td><td id="nutri-cal-change" class="percentage-change">-</td></tr>
+                                 <tr><td>Proteínas (g)</td><td id="nutri-prot-current">-</td><td id="nutri-prot-comp">-</td><td id="nutri-prot-change" class="percentage-change">-</td></tr>
+                                 <tr><td>Carboidratos (g)</td><td id="nutri-carb-current">-</td><td id="nutri-carb-comp">-</td><td id="nutri-carb-change" class="percentage-change">-</td></tr>
+                                 <tr><td>Gorduras (g)</td><td id="nutri-fat-current">-</td><td id="nutri-fat-comp">-</td><td id="nutri-fat-change" class="percentage-change">-</td></tr>
+                             </tbody>
+                         </table>
+                          <p class="text-xs text-gray-500 p-2 italic">* Média calculada considerando apenas os dias com registros de alimentação na respectiva semana.</p>
+                     </div>
+                 </div>
+
+                 <!-- Resumo Medidas Corporais -->
+                 <div>
+                     <h4 class="text-lg font-medium text-gray-800 mb-3">Medidas Corporais (Último Registro na Semana)</h4>
+                     <div class="overflow-x-auto bg-white rounded-lg shadow border border-gray-200">
+                         <table class="min-w-full comparison-table">
+                             <thead>
+                                 <tr>
+                                     <th>Medida</th>
+                                     <th>Semana Atual</th>
+                                     <th>Semana Comparada</th>
+                                     <th>Variação %</th>
+                                 </tr>
+                             </thead>
+                             <tbody>
+                                 <tr><td>Peso (kg)</td><td id="meas-peso-current">-</td><td id="meas-peso-comp">-</td><td id="meas-peso-change" class="percentage-change">-</td></tr>
+                                 <tr><td>Cintura (cm)</td><td id="meas-cintura-current">-</td><td id="meas-cintura-comp">-</td><td id="meas-cintura-change" class="percentage-change">-</td></tr>
+                                 <tr><td>Quadril (cm)</td><td id="meas-quadril-current">-</td><td id="meas-quadril-comp">-</td><td id="meas-quadril-change" class="percentage-change">-</td></tr>
+                                 <tr><td>Peito (cm)</td><td id="meas-peito-current">-</td><td id="meas-peito-comp">-</td><td id="meas-peito-change" class="percentage-change">-</td></tr>
+                                 <!-- Adicione mais linhas se monitorar outras medidas consistentemente -->
+                             </tbody>
+                         </table>
+                         <p class="text-xs text-gray-500 p-2 italic">* Considera o último valor registrado dentro do período de cada semana selecionada.</p>
+                     </div>
+                 </div>
+             </section>
+        </main>
+
+        <footer class="text-center p-4 bg-gray-100 text-gray-500 text-sm border-t border-gray-200 mt-auto">
+            Dados salvos localmente no seu navegador via LocalStorage.
+        </footer>
+    </div>
+
+    <script>
+        // --- ELEMENTOS DO DOM ---
+        const weekSelectorCurrent = document.getElementById('week-selector-current');
+        const weekSelectorComparison = document.getElementById('week-selector-comparison');
+        const compareButton = document.getElementById('compare-weeks-btn');
+        const resultsSection = document.getElementById('comparison-results');
+
+        // IDs dos elementos da tabela para atualização (exemplo)
+        // Nutrição
+        const nutriCalCurrent = document.getElementById('nutri-cal-current');
+        const nutriCalComp = document.getElementById('nutri-cal-comp');
+        const nutriCalChange = document.getElementById('nutri-cal-change');
+        // ... (adicione para proteinas, carbos, gorduras)
+        const nutriProtCurrent = document.getElementById('nutri-prot-current');
+        const nutriProtComp = document.getElementById('nutri-prot-comp');
+        const nutriProtChange = document.getElementById('nutri-prot-change');
+        const nutriCarbCurrent = document.getElementById('nutri-carb-current');
+        const nutriCarbComp = document.getElementById('nutri-carb-comp');
+        const nutriCarbChange = document.getElementById('nutri-carb-change');
+        const nutriFatCurrent = document.getElementById('nutri-fat-current');
+        const nutriFatComp = document.getElementById('nutri-fat-comp');
+        const nutriFatChange = document.getElementById('nutri-fat-change');
+
+        // Medidas
+        const measPesoCurrent = document.getElementById('meas-peso-current');
+        const measPesoComp = document.getElementById('meas-peso-comp');
+        const measPesoChange = document.getElementById('meas-peso-change');
+        // ... (adicione para cintura, quadril, peito etc.)
+        const measCinturaCurrent = document.getElementById('meas-cintura-current');
+        const measCinturaComp = document.getElementById('meas-cintura-comp');
+        const measCinturaChange = document.getElementById('meas-cintura-change');
+        const measQuadrilCurrent = document.getElementById('meas-quadril-current');
+        const measQuadrilComp = document.getElementById('meas-quadril-comp');
+        const measQuadrilChange = document.getElementById('meas-quadril-change');
+        const measPeitoCurrent = document.getElementById('meas-peito-current');
+        const measPeitoComp = document.getElementById('meas-peito-comp');
+        const measPeitoChange = document.getElementById('meas-peito-change');
+
+
+        // --- CONFIGURAÇÕES ---
+        const NUTRITION_STORAGE_KEY = 'advancedMealTrackerData-v4'; // Use a chave correta do seu registro.html
+        const MEASUREMENT_STORAGE_KEY = 'bodyMeasurementData-v2'; // Use a chave correta do seu medidas.html
+        const MEAL_TYPES = { breakfast: 'Café da Manhã', lunch: 'Almoço', dinner: 'Jantar', snacks: 'Lanches' };
+        let allNutritionalData = {};
+        let allMeasurementData = {};
+
+        // --- FUNÇÕES DE MANIPULAÇÃO DE DADOS ---
+        const loadData = () => {
+            const nutriDataString = localStorage.getItem(NUTRITION_STORAGE_KEY);
+            const measDataString = localStorage.getItem(MEASUREMENT_STORAGE_KEY);
+            try { allNutritionalData = nutriDataString ? JSON.parse(nutriDataString) : {}; }
+            catch (e) { console.error("Erro carregando dados nutricionais:", e); allNutritionalData = {}; }
+            try { allMeasurementData = measDataString ? JSON.parse(measDataString) : {}; }
+            catch (e) { console.error("Erro carregando dados de medidas:", e); allMeasurementData = {}; }
+        };
+
+        // Função para obter o início (Segunda) e fim (Domingo) de uma semana YYYY-Www
+        const getWeekDates = (weekString) => {
+            if (!weekString || !/^\d{4}-W\d{2}$/.test(weekString)) {
+                return null; // Formato inválido
+            }
+            const [year, week] = weekString.split('-W').map(Number);
+            const firstDayOfYear = new Date(year, 0, 1);
+            const daysOffset = (firstDayOfYear.getDay() + 6) % 7; // Dias até a primeira segunda-feira
+            const firstMondayTimestamp = firstDayOfYear.getTime() + ((1 - firstDayOfYear.getDay() + 7) % 7) * 86400000; // Timestamp da primeira segunda-feira
+            const targetMondayTimestamp = firstMondayTimestamp + (week - 1) * 7 * 86400000;
+
+            const startDate = new Date(targetMondayTimestamp);
+            const endDate = new Date(targetMondayTimestamp + 6 * 86400000); // Adiciona 6 dias para chegar a Domingo
+
+             // Formata como YYYY-MM-DD
+            const formatDate = (d) => d.toISOString().split('T')[0];
+
+            return {
+                startDate: formatDate(startDate),
+                endDate: formatDate(endDate)
+            };
+        };
+
+
+        // Calcula resumo nutricional (médias) e últimas medidas para uma semana
+        const calculateWeeklySummary = (weekString) => {
+            const dateRange = getWeekDates(weekString);
+            if (!dateRange) return { nutritionalAvg: null, latestMeasurements: null };
+
+            let totalCalories = 0, totalProtein = 0, totalCarbs = 0, totalFat = 0;
+            let recordedDaysCount = 0;
+            const dailyTotals = {}; // Para contar dias únicos com registro
+
+            // Processa dados nutricionais
+            Object.keys(allNutritionalData).forEach(date => {
+                if (date >= dateRange.startDate && date <= dateRange.endDate) {
+                    if (!dailyTotals[date]) { // Marca o dia como tendo registro
+                        dailyTotals[date] = true;
+                        recordedDaysCount++;
+                    }
+                    const dayData = allNutritionalData[date];
+                    Object.values(dayData).flat().forEach(item => {
+                        totalCalories += Number(item.calories) || 0;
+                        totalProtein += Number(item.protein) || 0;
+                        totalCarbs += Number(item.carbs) || 0;
+                        totalFat += Number(item.fat) || 0;
+                    });
+                }
+            });
+
+            const nutritionalAvg = recordedDaysCount > 0 ? {
+                calories: totalCalories / recordedDaysCount,
+                protein: totalProtein / recordedDaysCount,
+                carbs: totalCarbs / recordedDaysCount,
+                fat: totalFat / recordedDaysCount
+            } : null; // Retorna null se não houve registros na semana
+
+            // Processa dados de medidas (pega o último registro da semana)
+            let latestMeasurements = null;
+            let latestDateFound = null;
+
+            Object.keys(allMeasurementData)
+                .filter(date => date >= dateRange.startDate && date <= dateRange.endDate)
+                .sort() // Garante ordem cronológica
+                .forEach(date => {
+                    // Pega sempre o último encontrado no loop ordenado
+                    latestMeasurements = allMeasurementData[date];
+                    latestDateFound = date; // Guarda a data do último registro
+                });
+
+
+            return { nutritionalAvg, latestMeasurements };
+        };
+
+        // Calcula variação percentual
+        const calculatePercentageChange = (current, comparison) => {
+            if (current == null || comparison == null || comparison === 0) {
+                return { value: null, direction: null }; // Impossível calcular
+            }
+            const change = ((current - comparison) / Math.abs(comparison)) * 100; // Usar abs para evitar problemas com negativos
+            const direction = change > 0 ? 'increase' : (change < 0 ? 'decrease' : 'neutral');
+            return { value: change, direction };
+        };
+
+        // Formata e exibe o percentual com ícone/cor
+        const displayPercentage = (element, changeData, isGoodDecrease = false) => { // isGoodDecrease = true para peso, cintura
+            if (changeData.value === null) {
+                element.textContent = '-';
+                element.className = 'percentage-change'; // Reseta classes
+                return;
+            }
+
+            const value = changeData.value.toFixed(1);
+            let arrow = '';
+            let colorClass = '';
+
+            if (changeData.direction === 'increase') {
+                arrow = '▲';
+                colorClass = isGoodDecrease ? 'increase' : 'increase'; // Exemplo: Aumento de peso é 'ruim' (vermelho)
+            } else if (changeData.direction === 'decrease') {
+                arrow = '▼';
+                colorClass = isGoodDecrease ? 'decrease' : 'decrease'; // Exemplo: Diminuição de peso é 'bom' (verde)
+            } else {
+                arrow = ''; // Sem mudança
+                colorClass = 'neutral'; // Classe neutra (sem cor específica)
+            }
+
+            element.innerHTML = `${value}% <span class="${colorClass}">${arrow}</span>`;
+            element.className = `percentage-change ${colorClass}`; // Aplica a classe principal e a de cor
+        };
+
+
+        // Atualiza a tabela HTML com os resultados
+        const updateDisplay = (currentSummary, comparisonSummary) => {
+             resultsSection.classList.remove('hidden'); // Mostra a seção de resultados
+
+             // --- Atualiza Nutrição ---
+             const formatNutri = (val) => val != null ? val.toFixed(0) : '-';
+             nutriCalCurrent.textContent = formatNutri(currentSummary.nutritionalAvg?.calories);
+             nutriCalComp.textContent = formatNutri(comparisonSummary.nutritionalAvg?.calories);
+             displayPercentage(nutriCalChange, calculatePercentageChange(currentSummary.nutritionalAvg?.calories, comparisonSummary.nutritionalAvg?.calories));
+
+             nutriProtCurrent.textContent = formatNutri(currentSummary.nutritionalAvg?.protein);
+             nutriProtComp.textContent = formatNutri(comparisonSummary.nutritionalAvg?.protein);
+             displayPercentage(nutriProtChange, calculatePercentageChange(currentSummary.nutritionalAvg?.protein, comparisonSummary.nutritionalAvg?.protein));
+
+             nutriCarbCurrent.textContent = formatNutri(currentSummary.nutritionalAvg?.carbs);
+             nutriCarbComp.textContent = formatNutri(comparisonSummary.nutritionalAvg?.carbs);
+             displayPercentage(nutriCarbChange, calculatePercentageChange(currentSummary.nutritionalAvg?.carbs, comparisonSummary.nutritionalAvg?.carbs));
+
+             nutriFatCurrent.textContent = formatNutri(currentSummary.nutritionalAvg?.fat);
+             nutriFatComp.textContent = formatNutri(comparisonSummary.nutritionalAvg?.fat);
+             displayPercentage(nutriFatChange, calculatePercentageChange(currentSummary.nutritionalAvg?.fat, comparisonSummary.nutritionalAvg?.fat));
+
+             // --- Atualiza Medidas ---
+             const formatMeas = (val) => val != null ? val.toFixed(1) : '-';
+
+             measPesoCurrent.textContent = formatMeas(currentSummary.latestMeasurements?.peso);
+             measPesoComp.textContent = formatMeas(comparisonSummary.latestMeasurements?.peso);
+             displayPercentage(measPesoChange, calculatePercentageChange(currentSummary.latestMeasurements?.peso, comparisonSummary.latestMeasurements?.peso), true); // Diminuir é bom
+
+             measCinturaCurrent.textContent = formatMeas(currentSummary.latestMeasurements?.cintura);
+             measCinturaComp.textContent = formatMeas(comparisonSummary.latestMeasurements?.cintura);
+             displayPercentage(measCinturaChange, calculatePercentageChange(currentSummary.latestMeasurements?.cintura, comparisonSummary.latestMeasurements?.cintura), true); // Diminuir é bom
+
+             measQuadrilCurrent.textContent = formatMeas(currentSummary.latestMeasurements?.quadril);
+             measQuadrilComp.textContent = formatMeas(comparisonSummary.latestMeasurements?.quadril);
+             displayPercentage(measQuadrilChange, calculatePercentageChange(currentSummary.latestMeasurements?.quadril, comparisonSummary.latestMeasurements?.quadril));
+
+             measPeitoCurrent.textContent = formatMeas(currentSummary.latestMeasurements?.peito);
+             measPeitoComp.textContent = formatMeas(comparisonSummary.latestMeasurements?.peito);
+             displayPercentage(measPeitoChange, calculatePercentageChange(currentSummary.latestMeasurements?.peito, comparisonSummary.latestMeasurements?.peito));
+        };
+
+        // --- FUNÇÕES DE EVENTOS ---
+        const handleCompareWeeks = () => {
+            const currentWeekStr = weekSelectorCurrent.value;
+            const comparisonWeekStr = weekSelectorComparison.value;
+
+            if (!currentWeekStr || !comparisonWeekStr) {
+                alert("Por favor, selecione ambas as semanas para comparar.");
+                return;
+            }
+            if (currentWeekStr === comparisonWeekStr) {
+                 alert("Por favor, selecione semanas diferentes para comparar.");
+                 return;
+            }
+
+            // Calcula os resumos para cada semana
+            const currentSummary = calculateWeeklySummary(currentWeekStr);
+            const comparisonSummary = calculateWeeklySummary(comparisonWeekStr);
+
+            // Atualiza a exibição na tela
+            updateDisplay(currentSummary, comparisonSummary);
+        };
+
+        // --- INICIALIZAÇÃO ---
+        const initializeResumoSemanal = () => {
+            loadData(); // Carrega ambos os conjuntos de dados
+
+            // Define semanas padrão (atual e anterior) - Opcional
+            const today = new Date();
+            const currentYear = today.getFullYear();
+            const dayOfYear = Math.floor((today - new Date(currentYear, 0, 0)) / 86400000);
+            const currentWeekNumber = Math.ceil(dayOfYear / 7);
+            const prevWeekNumber = currentWeekNumber - 1;
+            // Formato YYYY-Www (adiciona zero à esquerda se necessário)
+            const formatWeek = (year, week) => `${year}-W${week.toString().padStart(2, '0')}`;
+
+            weekSelectorCurrent.value = formatWeek(currentYear, currentWeekNumber);
+            // Lida com o caso de ser a primeira semana do ano
+            if (prevWeekNumber < 1) {
+                 weekSelectorComparison.value = formatWeek(currentYear - 1, 52); // Aproximação, pode ser 53
+            } else {
+                 weekSelectorComparison.value = formatWeek(currentYear, prevWeekNumber);
+            }
+
+
+            // Adiciona Listener ao botão
+            compareButton.addEventListener('click', handleCompareWeeks);
+
+            // Não exibe resultados inicialmente
+            resultsSection.classList.add('hidden');
+        };
+
+        document.addEventListener('DOMContentLoaded', initializeResumoSemanal);
+
+    </script>
+
+</body>
+</html>

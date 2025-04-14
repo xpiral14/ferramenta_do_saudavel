@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rastreador - Medidas Corporais v7</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ... (Estilos CSS iguais à v6) ... */
+        body { font-family: 'Inter', sans-serif; }
+        .nav-link { @apply px-4 py-2 font-medium text-sm rounded-md cursor-pointer transition-colors duration-200 ease-in-out border border-transparent; }
+        .nav-link.active { @apply bg-emerald-600 text-white shadow-md border-emerald-700 cursor-default; }
+        .nav-link:not(.active) { @apply text-gray-600 bg-gray-100 hover:bg-emerald-100 hover:text-emerald-800 border-gray-200; }
+        .measurement-input { @apply w-full p-2 border border-gray-300 rounded-md placeholder-gray-400 text-sm shadow-sm focus:ring-emerald-500 focus:border-emerald-500; }
+        .delete-measurement-btn { @apply ml-2 text-red-500 hover:text-red-700 font-bold cursor-pointer; }
+         ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; } ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .chart-container { @apply h-64 md:h-72 relative p-4 border border-gray-200 rounded-lg shadow-sm bg-white; }
+        .chart-placeholder { @apply absolute inset-0 flex items-center justify-center text-gray-400 italic text-sm pointer-events-none; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-emerald-50 to-cyan-100 text-gray-800 p-4 md:p-8 min-h-screen">
+
+    <div class="max-w-7xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden">
+        <header class="bg-gradient-to-r from-emerald-600 to-cyan-600 p-6 text-white">
+             <h1 class="text-3xl md:text-4xl font-bold text-center">Meu Rastreador Alimentar Detalhado</h1>
+        </header>
+
+<!-- DENTRO DE index.html -->
+<nav class="p-4 border-b border-gray-200 bg-gray-50">
+    <div class="flex flex-wrap justify-center gap-2 md:gap-4">
+        <a href="registro.html" class="nav-link">📝 Registro Diário</a>
+        <a href="plano.html" class="nav-link">🎯 Plano Alimentar</a>
+        <a href="resumo.html" class="nav-link">📊 Resumo do Dia</a>
+        <a href="medidas.html" class="nav-link">📏 Medidas</a>
+        <a href="resumo_semanal.html" class="nav-link">📅 Resumo Semanal</a> <!-- NOVO LINK -->
+        
+    </div>
+</nav>
+
+        <main class="p-6 md:p-8">
+             <h2 class="text-2xl font-bold text-emerald-700 mb-6 border-b-2 border-emerald-200 pb-2">Registro e Evolução de Medidas Corporais</h2>
+
+             <!-- Formulário de Entrada -->
+             <section class="mb-8 p-6 border border-gray-200 rounded-lg shadow-sm bg-white">
+                  <!-- ... (Conteúdo do formulário igual) ... -->
+                   <div class="flex flex-col sm:flex-row items-center gap-4 mb-6"><label for="measurement-date-picker" class="text-lg font-semibold text-gray-700 whitespace-nowrap">Data das Medidas:</label><input type="date" id="measurement-date-picker" class="p-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 w-full sm:w-auto"></div>
+                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"><div><label for="medida-peso" class="block text-sm font-medium text-gray-600 mb-1">Peso (kg)</label><input type="number" step="0.1" min="0" id="medida-peso" class="measurement-input" placeholder="Ex: 85.5"></div><div><label for="medida-cintura" class="block text-sm font-medium text-gray-600 mb-1">Cintura (cm)</label><input type="number" step="0.1" min="0" id="medida-cintura" class="measurement-input" placeholder="Ex: 92"></div><div><label for="medida-quadril" class="block text-sm font-medium text-gray-600 mb-1">Quadril (cm)</label><input type="number" step="0.1" min="0" id="medida-quadril" class="measurement-input" placeholder="Ex: 105"></div><div><label for="medida-peito" class="block text-sm font-medium text-gray-600 mb-1">Peito (cm)</label><input type="number" step="0.1" min="0" id="medida-peito" class="measurement-input" placeholder="Ex: 110"></div><div><label for="medida-braco_d" class="block text-sm font-medium text-gray-600 mb-1">Braço D (cm)</label><input type="number" step="0.1" min="0" id="medida-braco_d" class="measurement-input" placeholder="Ex: 35"></div><div><label for="medida-braco_e" class="block text-sm font-medium text-gray-600 mb-1">Braço E (cm)</label><input type="number" step="0.1" min="0" id="medida-braco_e" class="measurement-input" placeholder="Ex: 34.5"></div><div><label for="medida-coxa_d" class="block text-sm font-medium text-gray-600 mb-1">Coxa D (cm)</label><input type="number" step="0.1" min="0" id="medida-coxa_d" class="measurement-input" placeholder="Ex: 58"></div><div><label for="medida-coxa_e" class="block text-sm font-medium text-gray-600 mb-1">Coxa E (cm)</label><input type="number" step="0.1" min="0" id="medida-coxa_e" class="measurement-input" placeholder="Ex: 57.5"></div><div><label for="medida-panturrilha_d" class="block text-sm font-medium text-gray-600 mb-1">Pant. D (cm)</label><input type="number" step="0.1" min="0" id="medida-panturrilha_d" class="measurement-input" placeholder="Ex: 40"></div><div><label for="medida-panturrilha_e" class="block text-sm font-medium text-gray-600 mb-1">Pant. E (cm)</label><input type="number" step="0.1" min="0" id="medida-panturrilha_e" class="measurement-input" placeholder="Ex: 39.5"></div></div>
+                 <button id="save-measurements-btn" class="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-6 rounded-md transition duration-200">Salvar Medidas do Dia</button>
+             </section>
+
+             <!-- Filtros de Data -->
+             <section class="mb-8 p-4 border border-gray-200 rounded-lg shadow-sm bg-gray-50">
+                 <h3 class="text-lg font-semibold text-gray-700 mb-3 text-center">Filtrar Período do Histórico e Gráficos</h3>
+                 <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+                     <div><label for="filter-start-date" class="block text-sm font-medium text-gray-600 mb-1">Data Início:</label><input type="date" id="filter-start-date" class="p-2 border border-gray-300 rounded-md shadow-sm w-full sm:w-auto"></div>
+                     <div><label for="filter-end-date" class="block text-sm font-medium text-gray-600 mb-1">Data Fim:</label><input type="date" id="filter-end-date" class="p-2 border border-gray-300 rounded-md shadow-sm w-full sm:w-auto"></div>
+                     <button id="apply-filter-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md transition duration-200 text-sm mt-4 sm:mt-0">Aplicar Filtro e Ver Gráficos</button>
+                 </div>
+             </section>
+
+             <!-- Seção de Gráficos -->
+             <section id="charts-section" class="mb-8 hidden">
+                  <h3 class="text-xl font-semibold text-cyan-700 mb-4 text-center">Evolução das Medidas (Período Filtrado)</h3>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <div class="chart-container"><h4 class="text-center font-medium text-gray-600 mb-2">Peso (kg)</h4><canvas id="chart-peso"></canvas><div class="chart-placeholder">Clique em "Aplicar Filtro".</div></div>
+                     <div class="chart-container"><h4 class="text-center font-medium text-gray-600 mb-2">Cintura (cm)</h4><canvas id="chart-cintura"></canvas><div class="chart-placeholder">Clique em "Aplicar Filtro".</div></div>
+                     <div class="chart-container"><h4 class="text-center font-medium text-gray-600 mb-2">Quadril (cm)</h4><canvas id="chart-quadril"></canvas><div class="chart-placeholder">Clique em "Aplicar Filtro".</div></div>
+                     <div class="chart-container"><h4 class="text-center font-medium text-gray-600 mb-2">Peito (cm)</h4><canvas id="chart-peito"></canvas><div class="chart-placeholder">Clique em "Aplicar Filtro".</div></div>
+                 </div>
+             </section>
+
+             <!-- Histórico de Medidas (Tabela) -->
+             <section id="history-section" class="hidden">
+                  <h3 class="text-xl font-semibold text-cyan-700 mb-4">Histórico Detalhado (Período Filtrado)</h3>
+                 <div class="overflow-x-auto bg-white rounded-lg shadow border border-gray-200">
+                     <table id="measurements-history-table" class="min-w-full divide-y divide-gray-200 text-sm">
+                         <!-- ... (Thead igual) ... -->
+                         <thead class="bg-gray-50"><tr><th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Data</th><th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Peso</th><th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Cintura</th><th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Quadril</th><th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Peito</th><th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Braço D</th><th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Braço E</th><th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Coxa D</th><th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Coxa E</th><th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Pant. D</th><th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Pant. E</th><th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Ações</th></tr></thead>
+                         <tbody id="measurements-history-body" class="bg-white divide-y divide-gray-200">
+                             <tr><td colspan="12" class="px-3 py-4 text-center text-gray-500 italic">Clique em "Aplicar Filtro" para carregar o histórico.</td></tr>
+                         </tbody>
+                     </table>
+                 </div>
+             </section>
+        </main>
+
+        <footer class="text-center p-4 bg-gray-100 text-gray-500 text-sm border-t border-gray-200 mt-auto">
+            Dados salvos localmente no seu navegador via LocalStorage.
+        </footer>
+    </div>
+
+    <script>
+        // --- ELEMENTOS, INPUTS, CONTEXTS --- (Igual v6)
+        const measurementDatePicker = document.getElementById('measurement-date-picker');
+        const saveButton = document.getElementById('save-measurements-btn');
+        const historyTableBody = document.getElementById('measurements-history-body');
+        const filterStartDateInput = document.getElementById('filter-start-date');
+        const filterEndDateInput = document.getElementById('filter-end-date');
+        const applyFilterBtn = document.getElementById('apply-filter-btn');
+        const chartsSection = document.getElementById('charts-section');
+        const historySection = document.getElementById('history-section');
+        const inputs = { peso: document.getElementById('medida-peso'), cintura: document.getElementById('medida-cintura'), quadril: document.getElementById('medida-quadril'), peito: document.getElementById('medida-peito'), braco_d: document.getElementById('medida-braco_d'), braco_e: document.getElementById('medida-braco_e'), coxa_d: document.getElementById('medida-coxa_d'), coxa_e: document.getElementById('medida-coxa_e'), panturrilha_d: document.getElementById('medida-panturrilha_d'), panturrilha_e: document.getElementById('medida-panturrilha_e') };
+        const chartContexts = { peso: document.getElementById('chart-peso')?.getContext('2d'), cintura: document.getElementById('chart-cintura')?.getContext('2d'), quadril: document.getElementById('chart-quadril')?.getContext('2d'), peito: document.getElementById('chart-peito')?.getContext('2d') };
+
+        // --- CONFIG, LS KEY, DATA, INSTANCES --- (Igual v6)
+        const MEASUREMENT_STORAGE_KEY = 'bodyMeasurementData-v2';
+        const MEASUREMENT_CONFIG = { peso: { label: 'Peso (kg)', color: 'rgb(16, 185, 129)' }, cintura: { label: 'Cintura (cm)', color: 'rgb(59, 130, 246)' }, quadril: { label: 'Quadril (cm)', color: 'rgb(234, 179, 8)' }, peito: { label: 'Peito (cm)', color: 'rgb(239, 68, 68)' }, braco_d: { label: 'Braço D (cm)', color: 'rgb(168, 85, 247)' }, braco_e: { label: 'Braço E (cm)', color: 'rgb(168, 85, 247, 0.6)' }, coxa_d: { label: 'Coxa D (cm)', color: 'rgb(249, 115, 22)' }, coxa_e: { label: 'Coxa E (cm)', color: 'rgb(249, 115, 22, 0.6)' }, panturrilha_d: { label: 'Pant. D (cm)', color: 'rgb(107, 114, 128)' }, panturrilha_e: { label: 'Pant. E (cm)', color: 'rgb(107, 114, 128, 0.6)' } };
+        let measurementData = {};
+        let chartInstances = {};
+
+        // --- FUNÇÕES LS --- (Igual v6)
+        const loadMeasurementData = () => { const d=localStorage.getItem(MEASUREMENT_STORAGE_KEY); try { return d?JSON.parse(d):{}; } catch(e){console.error(e);return{};} };
+        const saveMeasurementData = () => { try { localStorage.setItem(MEASUREMENT_STORAGE_KEY, JSON.stringify(measurementData)); } catch(e){console.error(e);alert("Erro salvando.");} };
+
+        // --- FUNÇÕES DE RENDERIZAÇÃO ---
+        const getFormattedDate = (d) => { const [y,m,day]=d.split('-'); return `${day}/${m}/${y}`; };
+
+        const applyFiltersAndUpdateDisplay = () => {
+            // 1. Mostra as seções (se ainda não estiverem visíveis)
+            chartsSection.classList.remove('hidden');
+            historySection.classList.remove('hidden');
+
+            // 2. Obtem dados filtrados
+            const startDate = filterStartDateInput.value || '1970-01-01';
+            const endDate = filterEndDateInput.value || new Date().toISOString().split('T')[0];
+            const filteredDates = Object.keys(measurementData)
+                .filter(d => d >= startDate && d <= endDate)
+                .sort();
+
+            // 3. Renderiza a tabela PRIMEIRO
+            renderMeasurementHistory(filteredDates);
+
+            // 4. Agenda a renderização/atualização dos gráficos para o PRÓXIMO FRAME
+            // Isso dá tempo para o navegador processar a exibição da tabela e do container dos gráficos
+            requestAnimationFrame(() => {
+                renderOrUpdateCharts(filteredDates);
+            });
+        };
+
+        const renderMeasurementHistory = (filteredDates) => {
+             // ... (Lógica interna da tabela igual à v6) ...
+            historyTableBody.innerHTML = ''; if(filteredDates.length===0){historyTableBody.innerHTML=`<tr><td colspan="12" class="px-3 py-4 text-center text-gray-500 italic">Nenhuma medida encontrada.</td></tr>`; return;}
+            filteredDates.forEach(date => {const data=measurementData[date];const row=document.createElement('tr');row.className="hover:bg-gray-50";let cells=`<td class="px-3 py-2 whitespace-nowrap">${getFormattedDate(date)}</td>`;Object.keys(MEASUREMENT_CONFIG).forEach(key => {cells += `<td class="px-3 py-2 whitespace-nowrap">${data[key]!=null?data[key].toFixed(1):'-'}</td>`;});cells += `<td class="px-3 py-2 whitespace-nowrap"><button class="delete-measurement-btn" data-date="${date}" title="Remover">×</button></td>`;row.innerHTML = cells; historyTableBody.appendChild(row);});
+        };
+
+        const renderOrUpdateCharts = (filteredDates) => {
+            Object.keys(chartContexts).forEach(key => {
+                const ctx = chartContexts[key];
+                const config = MEASUREMENT_CONFIG[key];
+                const placeholder = ctx?.canvas?.nextElementSibling;
+
+                if (!ctx || !config) return;
+
+                if (placeholder) placeholder.classList.add('hidden'); // Esconde placeholder
+
+                const labels = filteredDates;
+                const dataPoints = filteredDates.map(date => measurementData[date]?.[key] ?? null);
+                const hasValidData = dataPoints.some(p => p !== null);
+
+                if (hasValidData) {
+                    const chartData = { labels, datasets: [{ label: config.label, data: dataPoints, borderColor: config.color, backgroundColor: config.color.replace('rgb','rgba').replace(')','.1)'), tension: 0.1, fill: false, spanGaps: true }] };
+                    // ** Manter responsive: true aqui **
+                    const chartOptions = { responsive: true, maintainAspectRatio: true, scales: { x: { type: 'time', time: { unit: 'day', tooltipFormat: 'dd/MM/yyyy', displayFormats: { day: 'dd/MM', month: 'MM/yy', year: 'yyyy' } } }, y: { beginAtZero: false } }, plugins: { legend: { display: false }, tooltip: { intersect: false, mode: 'index' } } };
+
+                    if (chartInstances[key]) {
+                        chartInstances[key].data = chartData;
+                        // Reatribuir options pode ser necessário se o tipo de escala mudou, mas aqui é seguro atualizar só data
+                        // chartInstances[key].options = chartOptions;
+                        chartInstances[key].update();
+                    } else {
+                        chartInstances[key] = new Chart(ctx, { type: 'line', data: chartData, options: chartOptions });
+                    }
+                } else {
+                    // Limpa/destroi gráfico e mostra placeholder se não há dados
+                    if (chartInstances[key]) { chartInstances[key].destroy(); chartInstances[key] = null; }
+                    if (placeholder) { placeholder.classList.remove('hidden'); placeholder.textContent = "Sem dados no período."; }
+                }
+            });
+        };
+
+
+        // --- FUNÇÕES DE EVENTOS --- (handleSaveMeasurements, handleDeleteMeasurement iguais à v6)
+         const getCurrentMeasurementDateString = () => { const d=new Date(measurementDatePicker.value), o=d.getTimezoneOffset()*60000; return new Date(d.getTime()+o).toISOString().split('T')[0]; };
+         const handleSaveMeasurements = () => { const d=getCurrentMeasurementDateString();const n={};let h=false;Object.keys(MEASUREMENT_CONFIG).forEach(k=>{const i=inputs[k];if(i){const v=parseFloat(i.value)||null;n[k]=v;if(v!==null&&!isNaN(v))h=true;}});if(!h){alert("Insira um valor.");return;}measurementData[d]=n;saveMeasurementData();alert("Salvo para "+getFormattedDate(d)+". Clique 'Aplicar Filtro'.");Object.values(inputs).forEach(i=>i.value='');};
+         const handleDeleteMeasurement = (event) => { if(!event.target.matches('.delete-measurement-btn'))return; const d=event.target.dataset.date; if(!d)return; if(confirm(`Remover dia ${getFormattedDate(d)}?`)){delete measurementData[d];saveMeasurementData();alert("Removido "+getFormattedDate(d)+". Clique 'Aplicar Filtro'.");historyTableBody.innerHTML=`<tr><td colspan="12" class="px-3 py-4 text-center text-gray-500 italic">Clique 'Aplicar Filtro'.</td></tr>`;Object.keys(chartInstances).forEach(k=>{if(chartInstances[k])chartInstances[k].destroy();chartInstances[k]=null;const p=chartContexts[k]?.canvas?.nextElementSibling;if(p){p.classList.remove('hidden');p.textContent="Clique 'Aplicar Filtro'.";}});}};
+
+        // --- INICIALIZAÇÃO ---
+        const initializeMedidas = () => {
+            const today = new Date(), offset = today.getTimezoneOffset() * 60000;
+            const localISOTime = new Date(today.getTime() - offset).toISOString().split('T')[0];
+            measurementDatePicker.value = localISOTime;
+            measurementData = loadMeasurementData();
+            const endDateDefault = new Date(today.getTime() - offset);
+            const startDateDefault = new Date(endDateDefault);
+            startDateDefault.setDate(startDateDefault.getDate() - 90);
+            filterStartDateInput.value = startDateDefault.toISOString().split('T')[0];
+            filterEndDateInput.value = endDateDefault.toISOString().split('T')[0];
+
+            // ** Não renderiza nada inicialmente **
+            // Limpa placeholders iniciais se necessário
+            Object.values(chartContexts).forEach(ctx => {
+                 const placeholder = ctx?.canvas?.nextElementSibling;
+                 if (placeholder) placeholder.textContent = 'Clique em "Aplicar Filtro".';
+            });
+
+
+            // Listeners
+            saveButton.addEventListener('click', handleSaveMeasurements);
+            historyTableBody.addEventListener('click', handleDeleteMeasurement);
+            applyFilterBtn.addEventListener('click', applyFiltersAndUpdateDisplay);
+        };
+
+        document.addEventListener('DOMContentLoaded', initializeMedidas);
+    </script>
+
+</body>
+</html>

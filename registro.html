@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rastreador - Registro Diário</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .nav-link { @apply px-4 py-2 font-medium text-sm rounded-md cursor-pointer transition-colors duration-200 ease-in-out border border-transparent; }
+        .nav-link.active { @apply bg-emerald-600 text-white shadow-md border-emerald-700 cursor-default; } /* Página atual */
+        .nav-link:not(.active) { @apply text-gray-600 bg-gray-100 hover:bg-emerald-100 hover:text-emerald-800 border-gray-200; }
+        .remove-btn { cursor: pointer; margin-left: 8px; font-weight: bold; color: #ef4444; }
+        .remove-btn:hover { color: #dc2626; }
+         ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; } ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .macro-input { @apply w-full sm:w-20 p-2 border border-gray-300 rounded-md placeholder-gray-400 text-sm; }
+        .description-input { @apply flex-grow p-2 border border-gray-300 rounded-md placeholder-gray-400 text-sm; }
+        .add-food-btn { @apply bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-3 rounded-md transition duration-200 text-sm; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-emerald-50 to-cyan-100 text-gray-800 p-4 md:p-8 min-h-screen">
+
+    <div class="max-w-7xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden">
+        <header class="bg-gradient-to-r from-emerald-600 to-cyan-600 p-6 text-white">
+             <h1 class="text-3xl md:text-4xl font-bold text-center">Meu Rastreador Alimentar Detalhado</h1>
+        </header>
+
+        <!-- Navegação (Registro Diário está ativo) -->
+<!-- DENTRO DE registro.html -->
+<nav class="p-4 border-b border-gray-200 bg-gray-50">
+    <div class="flex flex-wrap justify-center gap-2 md:gap-4">
+        <a href="registro.html" class="nav-link">📝 Registro Diário</a>
+        <a href="plano.html" class="nav-link">🎯 Plano Alimentar</a>
+        <a href="resumo.html" class="nav-link">📊 Resumo do Dia</a>
+        <a href="medidas.html" class="nav-link">📏 Medidas</a>
+        <a href="resumo_semanal.html" class="nav-link">📅 Resumo Semanal</a> <!-- NOVO LINK -->
+        <a href="index.html" class="nav-link">🏠 Início</a>
+    </div>
+</nav>
+
+        <main class="p-6 md:p-8">
+             <h2 class="text-2xl font-bold text-emerald-700 mb-6 border-b-2 border-emerald-200 pb-2">Registro Diário de Refeições</h2>
+             <!-- Seletor de Data -->
+             <div class="mb-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+                 <label for="date-picker" class="text-lg font-semibold text-gray-700">Selecione a Data:</label>
+                 <input type="date" id="date-picker" class="p-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
+             </div>
+
+             <!-- Template e Container de Refeições -->
+             <template id="meal-section-template">
+                 <section class="meal-section p-4 border border-gray-200 rounded-lg shadow-sm bg-white mb-6">
+                     <h3 class="meal-title text-xl font-semibold text-cyan-700 mb-3"></h3>
+                     <div class="flex flex-col lg:flex-row gap-2 mb-3 items-end">
+                         <div class="flex-grow w-full lg:w-auto"><label class="block text-xs font-medium text-gray-500 mb-1">Alimento/Descrição</label><input type="text" class="food-description description-input w-full" placeholder="Ex: Peito de Frango Grelhado"></div>
+                         <div class="flex gap-2 w-full lg:w-auto flex-wrap sm:flex-nowrap">
+                             <div><label class="block text-xs font-medium text-gray-500 mb-1">Cal (kcal)</label><input type="number" min="0" class="food-calories macro-input" placeholder="150"></div>
+                             <div><label class="block text-xs font-medium text-gray-500 mb-1">Prot (g)</label><input type="number" min="0" step="0.1" class="food-protein macro-input" placeholder="30"></div>
+                             <div><label class="block text-xs font-medium text-gray-500 mb-1">Carb (g)</label><input type="number" min="0" step="0.1" class="food-carbs macro-input" placeholder="5"></div>
+                             <div><label class="block text-xs font-medium text-gray-500 mb-1">Gord (g)</label><input type="number" min="0" step="0.1" class="food-fat macro-input" placeholder="2"></div>
+                         </div>
+                         <button class="add-food-btn w-full lg:w-auto mt-2 lg:mt-0">Adicionar</button>
+                     </div>
+                     <p class="text-xs text-gray-500 italic mb-3">Nota: Insira Calorias e Macros. Se não souber Macros, insira ao menos Calorias.</p>
+                     <ul class="food-list list-none space-y-2 text-gray-700 max-h-60 overflow-y-auto pr-2"></ul>
+                 </section>
+             </template>
+             <div id="meal-sections-container" class="space-y-6"></div>
+        </main>
+
+        <footer class="text-center p-4 bg-gray-100 text-gray-500 text-sm border-t border-gray-200 mt-auto">
+            Dados salvos localmente no seu navegador via LocalStorage.
+        </footer>
+    </div>
+
+    <script>
+        // --- ELEMENTOS DO DOM (Registro) ---
+        const datePicker = document.getElementById('date-picker');
+        const mealSectionsContainer = document.getElementById('meal-sections-container');
+        const mealSectionTemplate = document.getElementById('meal-section-template');
+
+        // --- CONFIGURAÇÕES ---
+        const MEAL_TYPES = { breakfast: 'Café da Manhã', lunch: 'Almoço', dinner: 'Jantar', snacks: 'Lanches' };
+        const LOCAL_STORAGE_KEY = 'advancedMealTrackerData-v4'; // Use uma chave consistente entre registro.html e resumo.html
+        let dailyData = {}; // Armazena dados carregados/a serem salvos
+
+        // --- FUNÇÕES DE MANIPULAÇÃO DE DADOS (LOCAL STORAGE) ---
+        const loadDataFromLocalStorage = () => {
+            const dataString = localStorage.getItem(LOCAL_STORAGE_KEY);
+            try { return dataString ? JSON.parse(dataString) : {}; }
+            catch (e) { console.error("Erro ao carregar dados:", e); return {}; }
+        };
+        const saveDataToLocalStorage = () => {
+            try { localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dailyData)); }
+            catch (e) { console.error("Erro ao salvar dados:", e); alert("Erro ao salvar dados."); }
+        };
+
+         // --- FUNÇÕES DE RENDERIZAÇÃO (Registro Diário) ---
+         const getCurrentDateString = () => {
+            const date = new Date(datePicker.value);
+            const offset = date.getTimezoneOffset() * 60000;
+            const correctedDate = new Date(date.getTime() + offset);
+            return correctedDate.toISOString().split('T')[0];
+        };
+
+        const renderMealSections = () => {
+            mealSectionsContainer.innerHTML = '';
+            Object.keys(MEAL_TYPES).forEach(mealKey => {
+                const clone = mealSectionTemplate.content.cloneNode(true);
+                const section = clone.querySelector('.meal-section');
+                section.dataset.mealKey = mealKey;
+                clone.querySelector('.meal-title').textContent = MEAL_TYPES[mealKey];
+                clone.querySelector('.add-food-btn').addEventListener('click', handleAddFood);
+                mealSectionsContainer.appendChild(clone);
+            });
+        };
+
+        const renderFoodList = (date) => {
+            const dayData = dailyData[date] || {}; // Pega os dados do dia do objeto global 'dailyData'
+            Object.keys(MEAL_TYPES).forEach(mealKey => {
+                const section = mealSectionsContainer.querySelector(`.meal-section[data-meal-key="${mealKey}"]`);
+                if (!section) return;
+                const listElement = section.querySelector('.food-list');
+                listElement.innerHTML = '';
+                const mealItems = dayData[mealKey] || [];
+                mealItems.forEach((item, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'flex justify-between items-start text-sm py-1.5 border-b border-gray-100 flex-wrap';
+                    const safeDescription = item.description.replace(/</g, "<").replace(/>/g, ">");
+                    li.innerHTML = `
+                        <span class="flex-grow mr-2 mb-1 sm:mb-0">${safeDescription}</span>
+                        <span class="text-xs text-gray-600 whitespace-nowrap">(${Number(item.calories || 0).toFixed(0)}kcal | P:${Number(item.protein || 0).toFixed(1)}g C:${Number(item.carbs || 0).toFixed(1)}g G:${Number(item.fat || 0).toFixed(1)}g)</span>
+                        <span class="remove-btn ml-auto sm:ml-2" data-meal-key="${mealKey}" data-index="${index}" title="Remover item">×</span>
+                    `;
+                    listElement.appendChild(li);
+                });
+            });
+        };
+
+        // --- FUNÇÕES DE MANIPULAÇÃO DE EVENTOS (Registro) ---
+        const handleDateChange = () => {
+            const selectedDate = getCurrentDateString();
+            renderFoodList(selectedDate); // Re-renderiza a lista para a nova data selecionada
+        };
+
+        const handleAddFood = (event) => {
+            const button = event.target;
+            const section = button.closest('.meal-section');
+            if (!section) return;
+            const mealKey = section.dataset.mealKey;
+            const date = getCurrentDateString();
+            const descriptionInput = section.querySelector('.food-description');
+            const caloriesInput = section.querySelector('.food-calories');
+            const proteinInput = section.querySelector('.food-protein');
+            const carbsInput = section.querySelector('.food-carbs');
+            const fatInput = section.querySelector('.food-fat');
+            const description = descriptionInput.value.trim();
+            const calories = parseInt(caloriesInput.value) || 0;
+            const protein = parseFloat(proteinInput.value) || 0;
+            const carbs = parseFloat(carbsInput.value) || 0;
+            const fat = parseFloat(fatInput.value) || 0;
+
+            if (!description) { alert("Insira a descrição."); descriptionInput.focus(); return; }
+            if (calories <= 0 && protein <= 0 && carbs <= 0 && fat <= 0) { alert("Insira pelo menos um valor (Caloria ou Macro)."); caloriesInput.focus(); return; }
+
+            // Garante a estrutura do objeto dailyData
+            if (!dailyData[date]) dailyData[date] = {};
+            if (!dailyData[date][mealKey]) dailyData[date][mealKey] = [];
+
+            dailyData[date][mealKey].push({ description, calories, protein, carbs, fat }); // Adiciona ao objeto global
+
+            saveDataToLocalStorage(); // Salva o objeto global atualizado
+            renderFoodList(date); // Re-renderiza a lista
+
+            // Limpa campos
+            descriptionInput.value = ''; caloriesInput.value = ''; proteinInput.value = ''; carbsInput.value = ''; fatInput.value = ''; descriptionInput.focus();
+        };
+
+       const handleRemoveFood = (event) => {
+           if (!event.target.classList.contains('remove-btn')) return;
+           const button = event.target;
+           const mealKey = button.dataset.mealKey;
+           const index = parseInt(button.dataset.index, 10);
+           const date = getCurrentDateString();
+           if (dailyData[date]?.[mealKey]?.[index] !== undefined) {
+               dailyData[date][mealKey].splice(index, 1); // Remove do objeto global
+               saveDataToLocalStorage(); // Salva a alteração
+               renderFoodList(date); // Re-renderiza
+           }
+       };
+
+       // --- INICIALIZAÇÃO (Registro) ---
+       const initializeRegistro = () => {
+            // Define data atual
+            const today = new Date();
+            const offset = today.getTimezoneOffset() * 60000;
+            const localISOTime = new Date(today.getTime() - offset).toISOString().split('T')[0];
+            datePicker.value = localISOTime;
+
+            // Carrega dados salvos
+            dailyData = loadDataFromLocalStorage(); // Carrega para o objeto global
+
+            // Renderiza estrutura e dados iniciais
+            renderMealSections();
+            renderFoodList(localISOTime);
+
+            // Configura Listeners
+            datePicker.addEventListener('change', handleDateChange);
+            mealSectionsContainer.addEventListener('click', handleRemoveFood); // Delegação
+        };
+
+        // Executa a inicialização quando o DOM estiver pronto
+        document.addEventListener('DOMContentLoaded', initializeRegistro);
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rastreador - Resumo do Dia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN (Necessário para os gráficos) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .nav-link { @apply px-4 py-2 font-medium text-sm rounded-md cursor-pointer transition-colors duration-200 ease-in-out border border-transparent; }
+        .nav-link.active { @apply bg-emerald-600 text-white shadow-md border-emerald-700 cursor-default; } /* Página atual */
+        .nav-link:not(.active) { @apply text-gray-600 bg-gray-100 hover:bg-emerald-100 hover:text-emerald-800 border-gray-200; }
+         ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; } ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-emerald-50 to-cyan-100 text-gray-800 p-4 md:p-8 min-h-screen">
+
+    <div class="max-w-7xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden">
+        <header class="bg-gradient-to-r from-emerald-600 to-cyan-600 p-6 text-white">
+            <h1 class="text-3xl md:text-4xl font-bold text-center">Meu Rastreador Alimentar Detalhado</h1>
+        </header>
+
+        <!-- Navegação (Resumo do Dia está ativo) -->
+<!-- DENTRO DE registro.html -->
+<nav class="p-4 border-b border-gray-200 bg-gray-50">
+    <div class="flex flex-wrap justify-center gap-2 md:gap-4">
+        <a href="registro.html" class="nav-link active">📝 Registro Diário</a> <!-- Ativo -->
+        <a href="plano.html" class="nav-link">🎯 Plano Alimentar</a>
+        <a href="resumo.html" class="nav-link">📊 Resumo do Dia</a>
+        <a href="medidas.html" class="nav-link">📏 Medidas</a> <!-- NOVO LINK -->
+        <a href="resumo_semanal.html" class="nav-link">📅 Resumo Semanal</a> <!-- NOVO LINK -->
+        <a href="index.html" class="nav-link">🏠 Início</a>
+    </div>
+</nav>
+
+        <main class="p-6 md:p-8">
+             <h2 class="text-2xl font-bold text-emerald-700 mb-6 border-b-2 border-emerald-200 pb-2">Resumo Nutricional do Dia</h2>
+             <!-- Seletor de Data para o Resumo -->
+             <div class="mb-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+                 <label for="summary-date-picker" class="text-lg font-semibold text-gray-700">Visualizar Resumo Para:</label>
+                 <input type="date" id="summary-date-picker" class="p-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
+             </div>
+
+             <!-- Totais -->
+             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 text-center">
+                 <div class="p-4 bg-emerald-100 rounded-lg shadow"><h4 class="text-sm font-medium text-emerald-700 uppercase tracking-wider">Calorias Totais</h4><p class="text-3xl font-bold text-emerald-800 mt-1"><span id="summary-total-calories">0</span> kcal</p></div>
+                 <div class="p-4 bg-sky-100 rounded-lg shadow"><h4 class="text-sm font-medium text-sky-700 uppercase tracking-wider">Proteínas Totais</h4><p class="text-3xl font-bold text-sky-800 mt-1"><span id="summary-total-protein">0</span> g</p></div>
+                 <div class="p-4 bg-amber-100 rounded-lg shadow"><h4 class="text-sm font-medium text-amber-700 uppercase tracking-wider">Carboidratos Totais</h4><p class="text-3xl font-bold text-amber-800 mt-1"><span id="summary-total-carbs">0</span> g</p></div>
+                 <div class="p-4 bg-rose-100 rounded-lg shadow"><h4 class="text-sm font-medium text-rose-700 uppercase tracking-wider">Gorduras Totais</h4><p class="text-3xl font-bold text-rose-800 mt-1"><span id="summary-total-fat">0</span> g</p></div>
+             </div>
+
+             <!-- Gráficos -->
+             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                 <div class="p-4 border border-gray-200 rounded-lg shadow-sm bg-white"><h3 class="text-lg font-semibold text-cyan-700 mb-4 text-center">Distribuição de Calorias por Refeição</h3><div class="h-64 md:h-80 relative"><canvas id="meal-calorie-chart"></canvas></div></div>
+                 <div class="p-4 border border-gray-200 rounded-lg shadow-sm bg-white"><h3 class="text-lg font-semibold text-emerald-700 mb-4 text-center">Distribuição de Macronutrientes (em g)</h3><div class="h-64 md:h-80 relative"><canvas id="macro-distribution-chart"></canvas></div></div>
+             </div>
+        </main>
+
+        <footer class="text-center p-4 bg-gray-100 text-gray-500 text-sm border-t border-gray-200 mt-auto">
+            Dados salvos localmente no seu navegador via LocalStorage.
+        </footer>
+    </div>
+
+    <script>
+        // --- ELEMENTOS DO DOM (Resumo) ---
+        const summaryDatePicker = document.getElementById('summary-date-picker');
+        const summaryTotalCaloriesEl = document.getElementById('summary-total-calories');
+        const summaryTotalProteinEl = document.getElementById('summary-total-protein');
+        const summaryTotalCarbsEl = document.getElementById('summary-total-carbs');
+        const summaryTotalFatEl = document.getElementById('summary-total-fat');
+        const mealCalorieChartCtx = document.getElementById('meal-calorie-chart')?.getContext('2d');
+        const macroDistChartCtx = document.getElementById('macro-distribution-chart')?.getContext('2d');
+
+        // --- CONFIGURAÇÕES ---
+        const MEAL_TYPES = { breakfast: 'Café da Manhã', lunch: 'Almoço', dinner: 'Jantar', snacks: 'Lanches' };
+        const LOCAL_STORAGE_KEY = 'advancedMealTrackerData-v4'; // Mesma chave do registro.html
+        let dailyData = {}; // Objeto para guardar os dados carregados
+        let mealCalorieChartInstance = null;
+        let macroDistChartInstance = null;
+
+        // --- FUNÇÕES DE MANIPULAÇÃO DE DADOS (LOCAL STORAGE) ---
+        const loadDataFromLocalStorage = () => {
+            const dataString = localStorage.getItem(LOCAL_STORAGE_KEY);
+            try { return dataString ? JSON.parse(dataString) : {}; }
+            catch (e) { console.error("Erro ao carregar dados:", e); return {}; }
+        };
+
+        // --- FUNÇÕES DE ATUALIZAÇÃO (Resumo e Gráficos) ---
+         const getCurrentSummaryDateString = () => {
+            const date = new Date(summaryDatePicker.value);
+            const offset = date.getTimezoneOffset() * 60000;
+            const correctedDate = new Date(date.getTime() + offset);
+            return correctedDate.toISOString().split('T')[0];
+        };
+
+        const updateSummaryData = (date) => {
+            const dayData = dailyData[date] || {}; // Pega dados do objeto global
+            let totalCalories = 0, totalProtein = 0, totalCarbs = 0, totalFat = 0;
+            const caloriesPerMeal = {};
+
+            Object.keys(MEAL_TYPES).forEach(mealKey => {
+                let mealCalories = 0;
+                (dayData[mealKey] || []).forEach(item => {
+                    totalCalories += Number(item.calories) || 0;
+                    totalProtein += Number(item.protein) || 0;
+                    totalCarbs += Number(item.carbs) || 0;
+                    totalFat += Number(item.fat) || 0;
+                    mealCalories += Number(item.calories) || 0;
+                });
+                caloriesPerMeal[mealKey] = mealCalories;
+            });
+
+            // Atualiza os totais na tela
+            summaryTotalCaloriesEl.textContent = totalCalories.toFixed(0);
+            summaryTotalProteinEl.textContent = totalProtein.toFixed(1);
+            summaryTotalCarbsEl.textContent = totalCarbs.toFixed(1);
+            summaryTotalFatEl.textContent = totalFat.toFixed(1);
+
+            // Atualiza os gráficos
+            updateMealCalorieChart(caloriesPerMeal);
+            updateMacroDistributionChart(totalProtein, totalCarbs, totalFat);
+        };
+
+        const updateMealCalorieChart = (caloriesPerMeal) => {
+            if (!mealCalorieChartCtx) return;
+            const labels = Object.keys(MEAL_TYPES).map(key => MEAL_TYPES[key]);
+            const dataValues = Object.keys(MEAL_TYPES).map(key => caloriesPerMeal[key] || 0);
+            const chartData = { labels, datasets: [{ label: 'Calorias por Refeição (kcal)', data: dataValues, backgroundColor: ['rgba(52, 211, 153, 0.7)', 'rgba(34, 211, 238, 0.7)', 'rgba(251, 146, 60, 0.7)', 'rgba(168, 85, 247, 0.7)'], borderColor: ['rgb(16, 185, 129)', 'rgb(6, 182, 212)', 'rgb(249, 115, 22)', 'rgb(147, 51, 234)'], borderWidth: 1, hoverOffset: 4 }] };
+            const options = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels:{ padding: 10, boxWidth: 12, font: { size: 11}} } }, cutout: '50%'};
+            if (mealCalorieChartInstance) { mealCalorieChartInstance.data = chartData; mealCalorieChartInstance.update(); }
+            else { mealCalorieChartInstance = new Chart(mealCalorieChartCtx, { type: 'doughnut', data: chartData, options: options }); }
+        };
+
+        const updateMacroDistributionChart = (protein, carbs, fat) => {
+            if (!macroDistChartCtx) return;
+            const totalGrams = protein + carbs + fat;
+            const dataValues = totalGrams > 0 ? [protein, carbs, fat] : [0, 0, 0];
+            const chartData = { labels: [`Proteína (${protein.toFixed(1)}g)`, `Carboidrato (${carbs.toFixed(1)}g)`, `Gordura (${fat.toFixed(1)}g)`], datasets: [{ label: 'Distribuição de Macros (g)', data: dataValues, backgroundColor: ['rgba(34, 197, 94, 0.7)', 'rgba(234, 179, 8, 0.7)', 'rgba(239, 68, 68, 0.7)'], borderColor: ['rgb(22, 163, 74)', 'rgb(202, 138, 4)', 'rgb(220, 38, 38)'], borderWidth: 1, hoverOffset: 4 }] };
+            const options = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels:{ padding: 10, boxWidth: 12, font: { size: 11}} } }};
+            if (macroDistChartInstance) { macroDistChartInstance.data = chartData; macroDistChartInstance.update(); }
+            else { macroDistChartInstance = new Chart(macroDistChartCtx, { type: 'pie', data: chartData, options: options }); }
+        };
+
+        // --- FUNÇÕES DE MANIPULAÇÃO DE EVENTOS (Resumo) ---
+        const handleSummaryDateChange = () => {
+            const selectedDate = getCurrentSummaryDateString();
+            updateSummaryData(selectedDate); // Atualiza os dados e gráficos para a data escolhida
+        };
+
+        // --- INICIALIZAÇÃO (Resumo) ---
+        const initializeResumo = () => {
+            // Define data atual no seletor
+            const today = new Date();
+            const offset = today.getTimezoneOffset() * 60000;
+            const localISOTime = new Date(today.getTime() - offset).toISOString().split('T')[0];
+            summaryDatePicker.value = localISOTime;
+
+            // Carrega TODOS os dados do localStorage
+            dailyData = loadDataFromLocalStorage();
+
+            // Atualiza o resumo para a data atual
+            updateSummaryData(localISOTime);
+
+            // Adiciona listener para mudança de data no seletor DESTA página
+            summaryDatePicker.addEventListener('change', handleSummaryDateChange);
+        };
+
+        // Executa a inicialização
+        document.addEventListener('DOMContentLoaded', initializeResumo);
+    </script>
+
+</body>
+</html>

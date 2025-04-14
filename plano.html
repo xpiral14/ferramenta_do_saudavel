@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rastreador - Plano Alimentar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .nav-link { @apply px-4 py-2 font-medium text-sm rounded-md cursor-pointer transition-colors duration-200 ease-in-out border border-transparent; }
+        .nav-link.active { @apply bg-emerald-600 text-white shadow-md border-emerald-700 cursor-default; } /* Página atual */
+        .nav-link:not(.active) { @apply text-gray-600 bg-gray-100 hover:bg-emerald-100 hover:text-emerald-800 border-gray-200; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-emerald-50 to-cyan-100 text-gray-800 p-4 md:p-8 min-h-screen">
+
+    <div class="max-w-7xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden">
+        <header class="bg-gradient-to-r from-emerald-600 to-cyan-600 p-6 text-white">
+             <h1 class="text-3xl md:text-4xl font-bold text-center">Meu Rastreador Alimentar Detalhado</h1>
+        </header>
+
+        <nav class="p-4 border-b border-gray-200 bg-gray-50">
+            <div class="flex flex-wrap justify-center gap-2 md:gap-4">
+                <a href="registro.html" class="nav-link">📝 Registro Diário</a>
+                <a href="plano.html" class="nav-link">🎯 Plano Alimentar</a>
+                <a href="resumo.html" class="nav-link">📊 Resumo do Dia</a>
+                <a href="medidas.html" class="nav-link">📏 Medidas</a>
+                <a href="resumo_semanal.html" class="nav-link">📅 Resumo Semanal</a> <!-- NOVO LINK -->
+                
+            </div>
+        </nav>
+
+        <main class="p-6 md:p-8">
+            <h2 class="text-2xl font-bold text-emerald-700 mb-6 border-b-2 border-emerald-200 pb-2">Plano Alimentar Sugerido (Referência)</h2>
+            <p class="mb-6 text-gray-600 italic">Este é um exemplo baseado na sua rotina inicial. Use-o como guia e ajuste conforme necessário ou com orientação profissional.</p>
+            <div class="space-y-6">
+                <!-- Copiar as seções de exemplo do plano aqui (igual à versão anterior) -->
+                <section class="p-4 border border-gray-200 rounded-lg shadow-sm bg-emerald-50"><h3 class="text-xl font-semibold text-cyan-700 mb-3">~7:30 - Café da Manhã</h3><ul class="list-disc list-inside ml-4 space-y-1 text-gray-700 text-sm"><li><strong class="font-medium">Opção 1:</strong> 2-3 Ovos mexidos/cozidos + 2 fatias pão integral OU 3 col. sopa aveia + 1 porção fruta.</li><li><strong class="font-medium">Opção 2:</strong> Omelete (2-3 ovos) c/ vegetais + 1 tapioca média c/ frango desfiado ou queijo cottage.</li><li><strong class="font-medium">Opção 3:</strong> Shake Whey + água/leite desnatado + 1 fruta + 1 col. sopa aveia/chia.</li></ul><p class="mt-3 text-xs text-red-600"><strong class="font-semibold">Moderar:</strong> Calabresa, queijos amarelos.</p></section>
+                <section class="p-4 border border-gray-200 rounded-lg shadow-sm bg-emerald-50"><h3 class="text-xl font-semibold text-cyan-700 mb-3">~12:00 - Almoço</h3><ul class="list-disc list-inside ml-4 space-y-1 text-gray-700 text-sm"><li><strong class="font-medium">Metade do Prato:</strong> Salada variada + Legumes cozidos (brócolis, couve-flor). Tempere c/ azeite, limão/vinagre.</li><li><strong class="font-medium">1/4 do Prato:</strong> Proteína Magra Grelhada/Assada (Frango, Peixe, Boi magro).</li><li><strong class="font-medium">1/4 do Prato:</strong> Carboidrato (Arroz integral OU 3-4 col. sopa arroz branco + 2-3 col. sopa feijão caldo).</li></ul><p class="mt-3 text-xs text-red-600"><strong class="font-semibold">Moderar:</strong> Frituras, carnes gordas, tropeiro, molhos cremosos.</p></section>
+                <section class="p-4 border border-gray-200 rounded-lg shadow-sm bg-emerald-50"><h3 class="text-xl font-semibold text-cyan-700 mb-3">~16:00 - Lanche da Tarde</h3><ul class="list-disc list-inside ml-4 space-y-1 text-gray-700 text-sm"><li><strong class="font-medium">Opção 1:</strong> Iogurte Natural Desnatado + Fruta ou Granola s/ açúcar.</li><li><strong class="font-medium">Opção 2:</strong> Fruta (maçã, pera) + Punhado de Castanhas (20-30g).</li><li><strong class="font-medium">Opção 3:</strong> 2 fatias pão integral + Pasta de amendoim ou Queijo cottage.</li><li><strong class="font-medium">Opção 4:</strong> 2 Ovos cozidos.</li></ul></section>
+                <section class="p-4 border border-gray-200 rounded-lg shadow-sm bg-emerald-50"><h3 class="text-xl font-semibold text-cyan-700 mb-3">~20:00 - Jantar (Pré-Treino)</h3><ul class="list-disc list-inside ml-4 space-y-1 text-gray-700 text-sm"><li>Similar ao almoço, priorizar grelhados/cozidos + vegetais. Ajustar carbo para energia.</li><li><strong class="font-medium">Opções Rápidas Casa:</strong> Omelete c/ legumes; Salada c/ frango/atum; Sopa de legumes c/ frango; Wrap integral leve.</li></ul><p class="mt-3 text-xs text-gray-600">Comer ~1h a 1h30 antes do treino.</p></section>
+                <section class="p-4 border border-gray-200 rounded-lg shadow-sm bg-emerald-50"><h3 class="text-xl font-semibold text-cyan-700 mb-3">~22:15 - Pós-Treino (Opcional)</h3><ul class="list-disc list-inside ml-4 space-y-1 text-gray-700 text-sm"><li><strong class="font-medium">Opção 1:</strong> Shake Whey Protein c/ água.</li><li><strong class="font-medium">Opção 2:</strong> Iogurte natural desnatado.</li><li><strong class="font-medium">Opção 3:</strong> 2 Ovos cozidos (se jantar foi leve e ainda há fome).</li></ul></section>
+             </div>
+             <div class="mt-8 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded-md"><p>Lembre-se da hidratação (2.5-3.5L água/dia), sono adequado e moderação nos fins de semana.</p></div>
+        </main>
+
+        <footer class="text-center p-4 bg-gray-100 text-gray-500 text-sm border-t border-gray-200 mt-auto">
+             Dados salvos localmente no seu navegador via LocalStorage.
+        </footer>
+    </div>
+
+</body>
+</html>
